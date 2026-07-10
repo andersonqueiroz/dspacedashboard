@@ -172,8 +172,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 #DSpace
 SOLR_URL = config('SOLR_URL')
 DSPACE_PATH = config('DSPACE_PATH')
+DSPACE_EXTERNAL_API_URL = config('DSPACE_EXTERNAL_API_URL', default='https://repositorio.ufrn.br/server/api')
 MAPFILES_ROOT = os.path.join(BASE_DIR, 'mapfiles')
 DSPACE_IMPORT_USER_MAIL = config('DSPACE_IMPORT_USER_MAIL')
+DSPACE_IMPORT_USER_PASS = config('DSPACE_IMPORT_USER_PASS')
 
 #Scylax
 ENABLE_SCYLAX = config('ENABLE_SCYLAX', default=False, cast=bool)

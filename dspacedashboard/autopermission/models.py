@@ -23,7 +23,7 @@ class AutoPermissionUser(BaseModel):
 
     def __str__(self):
         return self.netid
-    
+
     def update_dspace_user(self):
         courses = ufrn.load_courses()
         student_details = ufrn.get_user_details(self.netid)
@@ -32,9 +32,9 @@ class AutoPermissionUser(BaseModel):
             self.api_response = {'error': 'Nenhum curso retornado para o usuário'}
             self.save()
             return
-        
+
         self.api_response = student_details
-        
+
         dspace_course = list(filter(lambda course: int(course['id_curso']) == int(student_details['course_id']), courses))
         if not dspace_course:
             self.api_response = {
@@ -42,18 +42,19 @@ class AutoPermissionUser(BaseModel):
             }
             self.save()
             return
-        
+
         if not dspace_course[0]['grupo_dspace']:
             self.api_response = {'error': f"SIGAA course {dspace_course[0]['nome']} has no dspace_group"}
             return
-        
+
         dspace_courses = dspace_course[0]['grupo_dspace'].split(',')
 
         try:
             for _dspace_course in dspace_courses:
-                dspace.update_dspace_user(self.netid, ["-G", _dspace_course.strip()])
+                dspace.update_dspace_user(self.netid, _dspace_course.strip())
             self.created = True
         except Exception as e:
+            print(e)
             self.created = False
 
         self.save()
