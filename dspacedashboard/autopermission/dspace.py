@@ -19,6 +19,7 @@ def update_dspace_user(netid, group_uuid):
 
     # 1. Obter token CSRF
     status = session.get(f"{base_url}/authn/status")
+    status.raise_for_status()
     csrf_token = status.headers.get("DSPACE-XSRF-TOKEN")
 
     # 2. Login
@@ -27,6 +28,7 @@ def update_dspace_user(netid, group_uuid):
         data={"user": settings.DSPACE_IMPORT_USER_MAIL, "password": settings.DSPACE_IMPORT_USER_PASS},
         headers={"X-XSRF-TOKEN": csrf_token},
     )
+    login.raise_for_status()
     csrf_token = login.headers.get("DSPACE-XSRF-TOKEN", csrf_token)
     token = login.headers.get("Authorization", "").replace("Bearer ", "")
 
@@ -36,10 +38,14 @@ def update_dspace_user(netid, group_uuid):
         params={"email": f"{netid}@ufrn.edu.br"},
         headers={"Authorization": f"Bearer {token}"},
     )
-    eperson_uuid = eperson.json()["id"]
+    eperson.raise_for_status()
+    eperson_data = eperson.json()
+    if not eperson_data.get("id"):
+        raise ValueError(f"EPerson não encontrada para {netid}@ufrn.edu.br")
+    eperson_uuid = eperson_data["id"]
 
     # 4. Adicionar ao grupo
-    session.post(
+    response = session.post(
         f"{base_url}/eperson/groups/{group_uuid}/epersons",
         data=f"{base_url}/eperson/epersons/{eperson_uuid}",
         headers={
@@ -48,4 +54,5 @@ def update_dspace_user(netid, group_uuid):
             "X-XSRF-TOKEN": csrf_token,
         },
     )
+    response.raise_for_status()
     print(f"Usuário {netid} adicionado ao grupo {group_uuid}")
